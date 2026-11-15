@@ -1,518 +1,78 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="color-scheme" content="light">
-<meta name="theme-color" content="#3457a6">
-<title>Meisho Meetダウンロード申請</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%F0%9F%9A%A6%3C/text%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
-<style>
-/* ============ 基盤 ============ */
-[hidden]{display:none !important}
-*,*::before,*::after{box-sizing:border-box}
-:root{
-  --blue:#3457a6; --blue-deep:#26437f; --blue-ink:#2c4f9e; --blue-glow:#5b86e0;
-  --red:#d8362e; --red-deep:#b52a24;
-  --amber:#f5a623; --green:#2fa46a;
-  --ink:#20242c; --muted:#8b94a7; --line:#dde2ec;
-  --paper:#ffffff; --navy:#111a2e;
-}
-html{scroll-behavior:smooth; scrollbar-color:#3457a6 #e8ecf4; scrollbar-width:thin}
-::-webkit-scrollbar{width:10px;height:10px}
-::-webkit-scrollbar-track{background:#e8ecf4}
-::-webkit-scrollbar-thumb{background:linear-gradient(#4a74c9,#2c4f9e);border-radius:8px;border:2px solid #e8ecf4}
-::-webkit-scrollbar-thumb:hover{background:#26437f}
-::selection{background:rgba(52,87,166,.22)}
-body{
-  margin:0; min-height:100vh; display:flex; flex-direction:column;
-  font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,sans-serif;
-  color:var(--ink); overflow-x:hidden;
-  background:linear-gradient(160deg,#f2f5fb 0%,#e6ebf6 55%,#eef0f7 100%);
-}
-button,input{font-family:inherit}
-:focus-visible{outline:3px solid rgba(74,116,201,.55);outline-offset:2px}
-
-/* ============ 背景（信号の灯り＋粒子） ============ */
-.bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-.bg::before{content:"";position:absolute;inset:0;
-  background:
-    radial-gradient(640px 480px at 10% -6%, rgba(91,134,224,.18), transparent 62%),
-    radial-gradient(720px 540px at 96% 104%, rgba(216,54,46,.10), transparent 60%),
-    radial-gradient(420px 320px at 82% 12%, rgba(245,166,35,.08), transparent 60%);
-}
-.bg::after{content:"";position:absolute;inset:0;opacity:.9;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
-}
-.sig-dot{position:absolute;border-radius:50%;filter:blur(2px);opacity:.32;animation:floaty 12s ease-in-out infinite}
-.sig-dot--r{width:14px;height:14px;background:var(--red);left:7%;top:64%;animation-delay:-2s}
-.sig-dot--a{width:11px;height:11px;background:var(--amber);left:22%;top:26%;animation-delay:-6s}
-.sig-dot--g{width:12px;height:12px;background:var(--green);right:12%;top:38%;animation-delay:-4s}
-.sig-dot--b{width:16px;height:16px;background:var(--blue-glow);right:24%;bottom:14%;animation-delay:-8s}
-
-/* ============ ヘッダー ============ */
-.site-head{
-  position:fixed;top:0;left:0;right:0;height:60px;z-index:50;
-  display:flex;align-items:center;justify-content:space-between;padding:0 20px;
-  background:rgba(255,255,255,.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  border-bottom:1px solid var(--line);animation:drop .5s ease both;
-}
-.brand{display:flex;align-items:center;gap:10px;min-width:0}
-.brand svg{flex:none}
-.sig-red{animation:redpulse 1.1s ease-in-out infinite}
-.brand__name{font-weight:900;font-size:18px;color:var(--navy);letter-spacing:.02em;white-space:nowrap}
-.brand__sub{font-size:11px;font-weight:700;color:var(--muted);border-left:1px solid var(--line);padding-left:10px;letter-spacing:.14em;white-space:nowrap}
-.sound-btn{
-  display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;cursor:pointer;
-  border:1px solid var(--line);background:#fff;color:var(--blue-ink);font-weight:700;font-size:12px;
-  transition:border-color .2s, box-shadow .2s, color .2s;
-}
-.sound-btn:hover{border-color:var(--blue);box-shadow:0 0 0 3px rgba(52,87,166,.12)}
-.sound-btn .slash{opacity:0}
-.sound-btn.is-off{color:var(--muted)}
-.sound-btn.is-off .waves{opacity:0}
-.sound-btn.is-off .slash{opacity:1}
-
-/* ============ 運行情報ティッカー ============ */
-.ticker{
-  margin-top:60px;position:relative;z-index:5;height:40px;
-  display:flex;align-items:center;gap:12px;padding:0 16px;
-  background:var(--navy);border-bottom:3px solid #0b1222;color:#ffb52e;
-}
-.ticker__dot{flex:none;width:10px;height:10px;border-radius:50%;background:#ff4b41;
-  box-shadow:0 0 10px rgba(255,75,65,.9);animation:blink 1s ease-in-out infinite}
-.ticker__viewport{flex:1;overflow:hidden}
-.ticker__track{display:flex;width:max-content;animation:slide 26s linear infinite;will-change:transform}
-.ticker:hover .ticker__track{animation-play-state:paused}
-.ticker__msg{flex:none;padding-right:64px;white-space:nowrap;font-weight:700;font-size:13px;letter-spacing:.12em}
-.ticker__msg b{color:#ff6b5e;font-weight:900}
-
-/* ============ ステージ／カード ============ */
-.stage{position:relative;z-index:10;flex:1;display:grid;place-items:center;padding:44px 20px 56px}
-.card{
-  width:min(760px,100%);position:relative;background:var(--paper);
-  border:1px solid #e5e9f2;border-radius:12px;
-  box-shadow:0 30px 60px -20px rgba(23,43,99,.25), 0 8px 24px rgba(23,43,99,.08);
-  transition:width .35s ease;animation:rise .6s cubic-bezier(.2,.9,.25,1) both .12s;
-}
-.card.is-error{width:min(1060px,100%)}
-.card.shake{animation:shake .45s linear}
-.view{padding:46px 54px 38px}
-
-/* ============ 申請フォーム ============ */
-.close-btn{
-  position:absolute;top:16px;right:16px;width:40px;height:40px;display:grid;place-items:center;
-  background:transparent;border:none;border-radius:8px;color:#9aa2b1;cursor:pointer;
-  transition:color .2s, background .2s, transform .25s;
-}
-.close-btn:hover{color:var(--ink);background:#f1f4f9;transform:rotate(90deg)}
-.form-head{display:flex;align-items:center;justify-content:center;gap:14px;padding:0 28px;animation:fadeUp .5s both .22s}
-.form-head h1{margin:0;font-size:26px;font-weight:900;color:var(--blue-ink);letter-spacing:.01em;text-align:center}
-.lead{margin:18px 0 34px;text-align:center;font-size:15px;color:#3a4150;line-height:1.8;animation:fadeUp .5s both .32s}
-.field{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center;margin-bottom:26px}
-#applyForm .field:nth-of-type(1){animation:fadeUp .5s both .4s}
-#applyForm .field:nth-of-type(2){animation:fadeUp .5s both .48s}
-.field label{text-align:right;font-size:17px;font-weight:500}
-.req{color:var(--red);font-style:normal;font-weight:700;margin-right:6px}
-.field input{
-  width:100%;height:62px;padding:0 18px;font-size:16px;color:var(--ink);
-  background:#fff;border:1px solid var(--line);border-radius:4px;
-  transition:border-color .2s, box-shadow .2s;
-}
-.field input::placeholder{color:#a3abbc}
-.field input:hover{border-color:#c6cddd}
-.field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(52,87,166,.15)}
-.submit{
-  width:100%;height:62px;margin-top:6px;border:none;border-radius:4px;cursor:pointer;
-  background:linear-gradient(180deg,#3d63b8,#31519c);color:#fff;
-  font-size:18px;font-weight:700;letter-spacing:.3em;text-indent:.3em;
-  box-shadow:0 10px 20px -10px rgba(49,81,156,.6);
-  transition:transform .15s, box-shadow .2s, filter .2s;
-  animation:fadeUp .5s both .56s;
-}
-.submit:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 14px 26px -10px rgba(49,81,156,.65)}
-.submit:active:not(:disabled){transform:translateY(1px);box-shadow:0 6px 14px -8px rgba(49,81,156,.6)}
-.submit:disabled{cursor:default;filter:saturate(.75) brightness(.97);letter-spacing:.12em;text-indent:.12em}
-.submit__spinner{
-  display:inline-block;width:18px;height:18px;margin-right:12px;vertical-align:-3px;
-  border:3px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;
-  animation:spin .7s linear infinite;
-}
-.note{margin:14px 0 0;text-align:right;font-size:13px;color:var(--muted);animation:fadeUp .5s both .64s}
-
-/* ============ エラー画面 ============ */
-.view--error{display:grid;grid-template-columns:1.05fr .95fr;gap:28px;align-items:stretch;min-height:500px;padding:50px 56px}
-.err-text{display:flex;flex-direction:column;min-width:0}
-.err-title{
-  margin:0 0 26px;font-size:clamp(46px,6.5vw,86px);font-weight:900;line-height:1.05;
-  color:var(--red);letter-spacing:.02em;animation:slam .45s both;
-}
-.err-msg{margin:0 0 14px;font-size:26px;font-weight:700;animation:fadeUp .4s both .12s}
-.err-detail{margin:0;font-size:14px;color:#6a7284;line-height:1.8;word-break:break-all;animation:fadeUp .4s both .18s}
-.err-joke{
-  margin:18px 0 0;padding:10px 14px;font-size:14px;font-weight:700;line-height:1.7;
-  font-family:"Zen Maru Gothic","Noto Sans JP",sans-serif;color:var(--red-deep);
-  background:#fdf1f0;border-left:3px solid var(--red);border-radius:4px;
-  animation:fadeUp .4s both .24s;
-}
-.err-foot{margin-top:auto;padding-top:38px;animation:fadeUp .4s both .3s}
-.retry{
-  display:inline-block;font-size:24px;font-weight:900;letter-spacing:.04em;
-  color:var(--red-deep);text-decoration:none;transition:color .2s, transform .2s;
-}
-.retry:hover{color:var(--red);text-decoration:underline;transform:translateX(4px)}
-.err-code{margin:18px 0 0;font-size:12px;letter-spacing:.06em;color:#9aa3b4;
-  font-family:ui-monospace,"SF Mono",Consolas,monospace}
-.err-mascot{margin:0;display:grid;place-items:center;min-width:0}
-.err-mascot img{
-  width:min(360px,100%);height:auto;
-  filter:drop-shadow(0 14px 22px rgba(60,30,20,.12));
-  animation:pop .55s cubic-bezier(.34,1.56,.64,1) both, bob 3.6s ease-in-out .6s infinite;
-}
-.mascot-fallback{
-  width:100%;min-height:320px;display:grid;place-items:center;align-content:center;gap:8px;
-  border:2px dashed var(--line);border-radius:12px;padding:24px;text-align:center;
-}
-.mascot-fallback span{font-size:92px;line-height:1}
-.mascot-fallback p{margin:0;font-size:13px;color:var(--muted);line-height:1.8}
-
-/* ============ フッター・トースト・フラッシュ ============ */
-.site-foot{position:relative;z-index:10;padding:16px 16px 26px;text-align:center;font-size:12px;color:#8f97a8;line-height:1.9}
-.toast{
-  position:fixed;left:50%;bottom:28px;z-index:90;transform:translateX(-50%) translateY(20px);
-  opacity:0;pointer-events:none;background:var(--navy);color:#fff;
-  padding:12px 18px;border-radius:10px;border-left:4px solid var(--red);
-  font-size:13px;font-weight:700;box-shadow:0 16px 32px -12px rgba(10,18,40,.5);
-  transition:opacity .3s, transform .3s;max-width:calc(100vw - 32px);
-}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.flash{position:fixed;inset:0;z-index:80;background:rgba(216,54,46,.18);opacity:0;pointer-events:none}
-.flash.on{animation:flashk .5s ease-out both}
-
-/* ============ キーフレーム ============ */
-@keyframes drop{from{transform:translateY(-100%)}to{transform:none}}
-@keyframes rise{from{opacity:0;transform:translateY(26px) scale(.985)}to{opacity:1;transform:none}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-@keyframes slam{0%{opacity:0;transform:scale(1.3)}60%{opacity:1;transform:scale(.96)}100%{opacity:1;transform:scale(1)}}
-@keyframes shake{0%,100%{transform:translateX(0)}15%{transform:translateX(-10px)}30%{transform:translateX(10px)}45%{transform:translateX(-7px)}60%{transform:translateX(7px)}75%{transform:translateX(-3px)}90%{transform:translateX(3px)}}
-@keyframes pop{0%{opacity:0;transform:scale(.55) rotate(-6deg)}70%{opacity:1;transform:scale(1.06) rotate(2deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
-@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes floaty{0%,100%{transform:translate(0,0)}50%{transform:translate(10px,-22px)}}
-@keyframes slide{to{transform:translateX(-50%)}}
-@keyframes flashk{0%{opacity:1}100%{opacity:0}}
-@keyframes blink{0%,45%{opacity:1}55%,100%{opacity:.2}}
-@keyframes redpulse{0%,100%{opacity:1}50%{opacity:.35}}
-
-/* ============ レスポンシブ ============ */
-@media (max-width:860px){
-  .view{padding:36px 24px 30px}
-  .view--error{grid-template-columns:1fr;min-height:0;padding:36px 24px 30px;gap:20px}
-  .err-mascot img{width:min(240px,72%)}
-  .err-foot{padding-top:28px}
-  .form-head h1{font-size:21px}
-  .field{grid-template-columns:1fr;gap:8px;margin-bottom:20px}
-  .field label{text-align:left;font-size:15px}
-  .field input{height:56px}
-  .submit{height:56px;font-size:16px}
-  .brand__sub{display:none}
-  .ticker{height:36px}
-  .ticker__msg{font-size:11.5px}
-  .err-msg{font-size:22px}
-  .retry{font-size:21px}
-}
-@media (max-width:480px){
-  .site-head{padding:0 12px}
-  .brand__name{font-size:15px}
-  .sound-btn{padding:6px 10px;font-size:11px}
-  .submit{letter-spacing:.15em;text-indent:.15em}
-}
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
-  .ticker__track{animation:none;transform:none}
-  html{scroll-behavior:auto}
-}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Meisho Meetダウンロード申請</title>
+  <style>
+    :root{--blue:#315da8;--red:#db3434;--ink:#20242a;--line:#dfe3e8;--muted:#777}
+    *{box-sizing:border-box}
+    body{margin:0;background:#fff;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic",Meiryo,sans-serif}
+    main{min-height:100vh;display:grid;place-items:center;padding:28px}
+    .panel{width:min(820px,100%)}
+    .title{display:flex;justify-content:center;align-items:center;gap:16px;color:var(--blue);font-size:clamp(27px,4vw,43px);font-weight:800;margin:0 0 22px}
+    .download{width:56px;height:56px;border:4px solid var(--blue);border-radius:50%;display:grid;place-items:center;font-size:35px;line-height:1}
+    .intro{text-align:center;font-size:clamp(16px,2.4vw,22px);margin:0 0 46px}
+    .form{display:grid;gap:24px}
+    .row{display:grid;grid-template-columns:170px 1fr;align-items:center;gap:20px}
+    label{text-align:right;font-size:21px}.required{color:var(--red);margin-right:9px}
+    input{width:100%;height:68px;border:1px solid var(--line);font-size:20px;padding:0 20px;outline:none;transition:.18s}
+    input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #315da820}
+    button{border:0;cursor:pointer;font:inherit}
+    .submit{width:calc(100% - 190px);margin-left:190px;height:72px;background:var(--blue);color:#fff;font-size:22px;margin-top:12px;transition:.18s}
+    .submit:hover{filter:brightness(.94)}
+    .note{text-align:right;color:#555;margin-top:20px}.note span{color:var(--red)}
+    .error{display:none;grid-template-columns:1.05fr .95fr;align-items:center;gap:20px;min-height:650px}
+    .error h1{font-family:serif;color:var(--red);font-size:clamp(58px,9vw,100px);line-height:1;margin:0 0 80px;text-shadow:0 2px #8c1515}
+    .message{font-family:serif;font-size:clamp(27px,4vw,45px);letter-spacing:.05em;margin-bottom:110px}
+    .retry{background:none;color:#b71919;font-family:serif;font-weight:800;font-size:clamp(25px,3.5vw,38px);padding:0}.retry:hover{text-decoration:underline}
+    .character{width:100%;max-height:650px;object-fit:contain}
+    body.show-error .request{display:none}
+    body.show-error .error{display:grid}
+    @media(max-width:680px){
+      main{padding:20px}.row{grid-template-columns:1fr;gap:8px}label{text-align:left}.submit{width:100%;margin-left:0}.intro{margin-bottom:30px}
+      .error{grid-template-columns:1fr;text-align:center;min-height:auto}.error h1{margin-bottom:25px}.message{margin-bottom:35px}.character{max-height:390px;grid-row:1}.error-copy{grid-row:2}
+    }
+    @media(prefers-reduced-motion:no-preference){body.show-error .error{animation:appear .25s ease-out}@keyframes appear{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}}
+  </style>
 </head>
 <body>
-
-<div class="bg" aria-hidden="true">
-  <span class="sig-dot sig-dot--r"></span>
-  <span class="sig-dot sig-dot--a"></span>
-  <span class="sig-dot sig-dot--g"></span>
-  <span class="sig-dot sig-dot--b"></span>
-</div>
-
-<header class="site-head">
-  <div class="brand">
-    <svg width="20" height="30" viewBox="0 0 20 30" aria-hidden="true">
-      <rect x="1" y="1" width="18" height="28" rx="5" fill="#111a2e"/>
-      <circle class="sig-red" cx="10" cy="7.5" r="3.4" fill="#ff4b41"/>
-      <circle cx="10" cy="15" r="3.4" fill="#6b5a26"/>
-      <circle cx="10" cy="22.5" r="3.4" fill="#245239"/>
-    </svg>
-    <span class="brand__name">Meisho Meet</span>
-    <span class="brand__sub">ダウンロードセンター</span>
-  </div>
-  <button type="button" id="soundBtn" class="sound-btn" aria-pressed="true">
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor" stroke="none"/>
-      <g class="waves"><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 6a9 9 0 0 1 0 12"/></g>
-      <line class="slash" x1="16" y1="9" x2="22" y2="15"/>
-      <line class="slash" x1="22" y1="9" x2="16" y2="15"/>
-    </svg>
-    <span id="soundLabel">音声 ON</span>
-  </button>
-</header>
-
-<div class="ticker">
-  <span class="ticker__dot" aria-hidden="true"></span>
-  <div class="ticker__viewport">
-    <div class="ticker__track">
-      <span class="ticker__msg">【運行情報】ただいま信号異常のため、Meisho Meet全系統でダウンロードを見合わせております。ご不便をおかけいたします。 ■ 本日の信号異常発生：<b class="js-count">0</b>件 ■ 復旧の見込み：未定 ■ 係員の対応：困惑中</span>
-      <span class="ticker__msg" aria-hidden="true">【運行情報】ただいま信号異常のため、Meisho Meet全系統でダウンロードを見合わせております。ご不便をおかけいたします。 ■ 本日の信号異常発生：<b class="js-count">0</b>件 ■ 復旧の見込み：未定 ■ 係員の対応：困惑中</span>
-    </div>
-  </div>
-</div>
-
-<main class="stage">
-  <div class="card" id="card">
-
-    <!-- ===== 申請フォーム画面 ===== -->
-    <section id="viewForm" class="view view--form" aria-labelledby="formTitle">
-      <button type="button" class="close-btn" id="closeBtn" aria-label="閉じる">
-        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
-          <line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/>
-        </svg>
-      </button>
-      <div class="form-head">
-        <svg viewBox="0 0 48 48" width="42" height="42" fill="none" stroke="#2c4f9e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="24" cy="27" r="16"/>
-          <path d="M24 2v30" stroke="#ffffff" stroke-width="8"/>
-          <path d="M24 3v29"/>
-          <path d="M15.5 23.5 24 32l8.5-8.5"/>
-        </svg>
-        <h1 id="formTitle">Meisho Meetダウンロード申請</h1>
-      </div>
-      <p class="lead">資料ダウンロードのため、以下の情報をご入力ください。ご協力ありがとうございます！</p>
-      <form id="applyForm" novalidate autocomplete="off">
-        <div class="field">
-          <label for="meishoId"><i class="req">＊</i>Meisho ID：</label>
-          <input id="meishoId" name="meishoId" type="text" placeholder="Meisho IDを入力してください">
-        </div>
-        <div class="field">
-          <label for="lineage"><i class="req">＊</i>所属系統：</label>
-          <input id="lineage" name="lineage" type="text" list="lineList" placeholder="所属系統を入力してください">
-          <datalist id="lineList">
-            <option value="本線系統"></option>
-            <option value="環状系統"></option>
-            <option value="空港連絡系統"></option>
-            <option value="深夜急行系統（運休中）"></option>
-            <option value="廃止済み支線"></option>
-          </datalist>
-        </div>
-        <button type="submit" id="submitBtn" class="submit">
-          <span class="submit__spinner" id="spinner" hidden></span><span id="submitLabel">申請する</span>
-        </button>
-        <p class="note"><i class="req">＊</i> は必須項目です</p>
+  <main>
+    <section class="panel request" aria-labelledby="page-title">
+      <h1 class="title" id="page-title"><span class="download" aria-hidden="true">↓</span>Meisho Meetダウンロード申請</h1>
+      <p class="intro">以下の情報を入力して、ダウンロードを申請してください。</p>
+      <form class="form" id="joke-form">
+        <div class="row"><label for="meisho-id"><span class="required">＊</span>Meisho ID：</label><input id="meisho-id" name="meisho-id" autocomplete="off" placeholder="Meisho IDを入力" required></div>
+        <div class="row"><label for="affiliation"><span class="required">＊</span>所属系統：</label><input id="affiliation" name="affiliation" autocomplete="off" placeholder="所属系統を入力" required></div>
+        <button class="submit" type="submit">申請情報を送信</button>
       </form>
+      <p class="note"><span>＊</span> 必須項目</p>
     </section>
 
-    <!-- ===== エラー画面 ===== -->
-    <section id="viewError" class="view view--error" aria-labelledby="errTitle" hidden>
-      <div class="err-text">
-        <div role="alert">
-          <h2 class="err-title" id="errTitle">信号異常！</h2>
-          <p class="err-msg">ID不存在</p>
-        </div>
-        <p class="err-detail" id="errEcho"></p>
-        <p class="err-joke" id="errJoke"></p>
-        <div class="err-foot">
-          <a href="#" id="retryLink" class="retry">【戻って再試行】</a>
-          <p class="err-code" id="errCode">ERR: MEISHO-SIG-0x404</p>
-        </div>
+    <section class="panel error" aria-live="assertive" aria-labelledby="error-title">
+      <div class="error-copy">
+        <h1 id="error-title">信号異常！</h1>
+        <p class="message">ID不存在</p>
+        <button class="retry" id="retry" type="button">【戻って再試行】</button>
       </div>
-      <figure class="err-mascot">
-        <!-- ▼▼ マスコット画像：この src を、生成画像の Raw URL に差し替えてください ▼▼
-             （または生成画像を mascot.png という名前でこのHTMLと同じフォルダに置くだけでも表示されます） -->
-        <img id="mascotImg" src="mascot.png" alt="両手を上げて困った表情をする、絵本風のむちっとした男の子">
-        <div class="mascot-fallback" id="mascotFallback" hidden>
-          <span aria-hidden="true">🚦</span>
-          <p>マスコット画像待機中<br>img の src を Raw URL に差し替えてください</p>
-        </div>
-      </figure>
+      <img class="character" src="https://raw.githubusercontent.com/AuruComputerTechnology/AuruPhotoCutter/main/%E3%81%9D%E3%82%89%E3%81%8D%E3%82%89%E3%82%93.png" alt="そらきゅね">
     </section>
-
-  </div>
-</main>
-
-<footer class="site-foot">
-  © 2026 Meisho Meet 信号保安区／運転整理室<br>
-  ※このサイトはジョークです。入力された情報が送信・保存されることはありません。どんなIDも存在しません。
-</footer>
-
-<div class="toast" id="toast" role="status"></div>
-<div class="flash" id="flash" aria-hidden="true"></div>
-
-<script>
-(function(){
-'use strict';
-var $ = function(id){ return document.getElementById(id); };
-var card=$('card'), viewForm=$('viewForm'), viewError=$('viewError'),
-    form=$('applyForm'), idInput=$('meishoId'), lineInput=$('lineage'),
-    submitBtn=$('submitBtn'), submitLabel=$('submitLabel'), spinner=$('spinner'),
-    retry=$('retryLink'), closeBtn=$('closeBtn'),
-    soundBtn=$('soundBtn'), soundLabel=$('soundLabel'),
-    toast=$('toast'), flash=$('flash'),
-    errEcho=$('errEcho'), errJoke=$('errJoke'), errCode=$('errCode'),
-    mascotImg=$('mascotImg'), mascotFallback=$('mascotFallback');
-var counts=document.querySelectorAll('.js-count');
-var BASE_TITLE='Meisho Meetダウンロード申請';
-var attempts=0, busy=false, toastTimer=null, stepTimer=null;
-
-/* ---- ストレージ（サンドボックス対策） ---- */
-function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
-function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
-
-/* ---- 効果音（WebAudio・全て合成音） ---- */
-var audioCtx=null, master=null;
-var soundOn = lsGet('meishoSound') !== 'off';
-function ensureAudio(){
-  if(audioCtx) return true;
-  try{
-    var AC=window.AudioContext||window.webkitAudioContext;
-    if(!AC) return false;
-    audioCtx=new AC();
-    master=audioCtx.createGain();
-    master.gain.value=soundOn?0.5:0;
-    master.connect(audioCtx.destination);
-  }catch(e){ return false; }
-  return true;
-}
-function tone(freq,dur,type,vol,when){
-  if(!soundOn||!ensureAudio()) return;
-  if(audioCtx.state==='suspended') audioCtx.resume();
-  var t=audioCtx.currentTime+(when||0);
-  var o=audioCtx.createOscillator(), g=audioCtx.createGain();
-  o.type=type||'sine';
-  o.frequency.setValueAtTime(freq,t);
-  g.gain.setValueAtTime(0.0001,t);
-  g.gain.exponentialRampToValueAtTime(vol||0.15,t+0.015);
-  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-  o.connect(g); g.connect(master);
-  o.start(t); o.stop(t+dur+0.05);
-}
-var sfx={
-  click:function(){ tone(1150,.07,'sine',.12); },
-  submit:function(){ tone(620,.09,'sine',.14); tone(930,.12,'sine',.14,.09); },
-  error:function(){ tone(311,.16,'square',.15); tone(233,.22,'square',.15,.17); tone(155,.3,'triangle',.2,.36); },
-  deny:function(){ tone(180,.12,'square',.12); tone(140,.14,'square',.12,.12); },
-  back:function(){ tone(520,.08,'sine',.13); tone(780,.1,'sine',.13,.08); }
-};
-function renderSound(){
-  soundBtn.setAttribute('aria-pressed', String(soundOn));
-  soundBtn.classList.toggle('is-off', !soundOn);
-  soundLabel.textContent = soundOn ? '音声 ON' : '音声 OFF';
-  if(master) master.gain.value = soundOn ? 0.5 : 0;
-}
-soundBtn.addEventListener('click', function(){
-  soundOn=!soundOn;
-  lsSet('meishoSound', soundOn?'on':'off');
-  renderSound();
-  if(soundOn){ ensureAudio(); sfx.click(); }
-});
-renderSound();
-
-/* ---- 画面切り替え ---- */
-function show(view){
-  var isErr = view==='error';
-  viewForm.hidden=isErr;
-  viewError.hidden=!isErr;
-  card.classList.toggle('is-error', isErr);
-  document.title = isErr ? '信号異常！ ID不存在 — Meisho Meet' : BASE_TITLE;
-}
-
-var jokes=[
-  '入力されたMeisho IDは、当社信号システムに登録されていません。',
-  '信号異常！ ID不存在',
-  '信号異常！ ID不存在',
-  '信号異常！ ID不存在',
-  '信号異常！ ID不存在。'
-];
-function jokeFor(n){
-  return n<=jokes.length ? jokes[n-1] : n+'件の送信を待機しています...';
-}
-
-
-form.addEventListener('submit', function(e){
-  e.preventDefault();
-  if(busy) return;
-  busy=true;
-  sfx.submit();
-  submitBtn.disabled=true;
-  spinner.hidden=false;
-  submitLabel.textContent='IDを照会中…';
-  stepTimer=setTimeout(function(){ submitLabel.textContent='所属系統を確認中…'; },800);
-  setTimeout(function(){
-    clearTimeout(stepTimer);
-    attempts++;
-    var idv=idInput.value.trim(), lv=lineInput.value.trim();
-    errEcho.textContent='照会内容 ― Meisho ID：'+(idv||'（未入力）')+' ／ 所属系統：'+(lv||'（未入力）');
-    errJoke.textContent='※ '+jokeFor(attempts);
-    errCode.textContent='ERR: MEISHO-SIG-0x404 ／ 照会回数：'+attempts+' ／ ';
-    for(var i=0;i<counts.length;i++) counts[i].textContent=String(attempts);
-    busy=false;
-    submitBtn.disabled=false;
-    spinner.hidden=true;
-    submitLabel.textContent='申請する';
-    show('error');
-    flash.classList.remove('on'); void flash.offsetWidth; flash.classList.add('on');
-    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
-    sfx.error();
-    window.scrollTo({top:0, behavior:'smooth'});
-    retry.focus({preventScroll:true});
-  },1600);
-});
-card.addEventListener('animationend', function(e){
-  if(e.animationName==='shake') card.classList.remove('shake');
-});
-
-/* ---- 戻って再試行（Escでも戻る） ---- */
-retry.addEventListener('click', function(e){
-  e.preventDefault();
-  sfx.back();
-  show('form');
-  idInput.focus();
-});
-document.addEventListener('keydown', function(e){
-  if(e.key==='Escape' && !viewError.hidden){
-    sfx.back(); show('form'); idInput.focus();
-  }
-});
-
-/* ---- ×ボタン：閉じられない ---- */
-closeBtn.addEventListener('click', function(){
-  if(busy) return;
-  sfx.deny();
-  card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
-  showToast('信号異常のため、この窓口は閉じられません。');
-});
-function showToast(msg){
-  toast.textContent=msg;
-  toast.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(function(){ toast.classList.remove('show'); },2600);
-}
-
-/* ---- 画像未設定時のフォールバック ---- */
-mascotImg.addEventListener('error', function(){
-  mascotImg.hidden=true;
-  mascotFallback.hidden=false;
-});
-})();
-</script>
+  </main>
+  <script>
+    const form = document.getElementById('joke-form');
+    const retry = document.getElementById('retry');
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      // 入力内容は保存・送信せず、必ずジョーク用エラー画面へ切り替える。
+      document.body.classList.add('show-error');
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+    retry.addEventListener('click', () => {
+      document.body.classList.remove('show-error');
+      form.reset();
+      document.getElementById('meisho-id').focus();
+    });
+  </script>
 </body>
 </html>
+
