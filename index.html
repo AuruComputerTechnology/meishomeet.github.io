@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Meisho Meetダウンロード申請</title>
+  <title>Meisho Meetログイン</title>
   <style>
     :root{--blue:#315da8;--red:#db3434;--ink:#20242a;--line:#dfe3e8;--muted:#777}
     *{box-sizing:border-box}
@@ -39,21 +39,21 @@
 <body>
   <main>
     <section class="panel request" aria-labelledby="page-title">
-      <h1 class="title" id="page-title"><span class="download" aria-hidden="true">↓</span>Meisho Meetダウンロード申請</h1>
-      <p class="intro">以下の情報を入力して、ダウンロードを申請してください。</p>
+      <h1 class="title" id="page-title"><span class="download" aria-hidden="true">↓</span>Meisho Meetログイン</h1>
+      <p class="intro">偉大な計画は，堅実な道具から</p>
       <form class="form" id="joke-form">
         <div class="row"><label for="meisho-id"><span class="required">＊</span>Meisho ID：</label><input id="meisho-id" name="meisho-id" autocomplete="off" placeholder="Meisho IDを入力" required></div>
         <div class="row"><label for="affiliation"><span class="required">＊</span>所属系統：</label><input id="affiliation" name="affiliation" autocomplete="off" placeholder="所属系統を入力" required></div>
-        <button class="submit" type="submit">申請情報を送信</button>
+        <button class="submit" type="submit">情報を送信</button>
       </form>
       <p class="note"><span>＊</span> 必須項目</p>
     </section>
 
     <section class="panel error" aria-live="assertive" aria-labelledby="error-title">
       <div class="error-copy">
-        <h1 id="error-title">信号異常！</h1>
-        <p class="message">ID不存在</p>
-        <button class="retry" id="retry" type="button">【戻って再試行】</button>
+        <h1 id="error-title">無信号</h1>
+        <p class="message">現在接続ができません</p>
+        <button class="retry" id="retry" type="button">再試行</button>
       </div>
       <img class="character" src="https://raw.githubusercontent.com/AuruComputerTechnology/AuruPhotoCutter/main/そらきゅん.png" alt="そらきゅね">
     </section>
@@ -63,7 +63,6 @@
     const retry = document.getElementById('retry');
     form.addEventListener('submit', (event) => {
       event.preventDefault();
-      // 入力内容は保存・送信せず、必ずジョーク用エラー画面へ切り替える。
       document.body.classList.add('show-error');
       window.scrollTo({top: 0, behavior: 'smooth'});
     });
